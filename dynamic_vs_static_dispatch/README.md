@@ -1,18 +1,36 @@
 # C++ vs Rust 
 
+- [C++ vs Rust](#c-vs-rust)
+  - [Dynamic and static dispatch](#dynamic-and-static-dispatch)
+    - [Part 1: Dynamic dispatch](#part-1-dynamic-dispatch)
+      - [Example](#example)
+        - [C++](#c)
+        - [Rust](#rust)
+      - [Dispatch](#dispatch)
+        - [C++:](#c-1)
+        - [Rust](#rust-1)
+      - [Key points](#key-points)
+    - [Part 2: Static dispatch](#part-2-static-dispatch)
+      - [Rust](#rust-2)
+      - [C++](#c-2)
+      - [Key points](#key-points-1)
+  - [References](#references)
+
+
 ## Dynamic and static dispatch
 
-The idea of this document is to show how the different types of dispatches are implemented in C++ and Rust.
+The idea is to show how C++ and Rust implement both types of dispatching.
 
 ### Part 1: Dynamic dispatch
 
 Quoting [wikipedia](https://en.wikipedia.org/wiki/Dynamic_dispatch), "dynamic dispatch is the process of selecting which implementation of a polymorphic operation (method or function) to call at run time."
 
-One way to perform a dynamic dispatch is to use a [vtable](https://en.wikipedia.org/wiki/Virtual_method_table). In C++, a vtable is automatically created for a class/struct when a virtual method is declared. A vtable consumes extra space, and a call dispatched through it, is slower compared to a non virtual call. That is why we often want static polymorphism (which is not applicable to all scenarios). In Rust the vtable is not associated to the interface (trait), but to the pointer that carries the object (a [fat pointer](https://stackoverflow.com/questions/57754901/what-is-a-fat-pointer)), that is why we can use the same trait for dynamic or static polymorphism. 
+One way to implement it, is through a [vtable](https://en.wikipedia.org/wiki/Virtual_method_table). In C++, a vtable is automatically created for a class/struct when a virtual method is declared. A vtable consumes extra space, and a call dispatched through it, is slower compared to a non virtual call. That is why we often want static polymorphism (which is not applicable to all scenarios). In Rust the vtable is not associated to the interface (trait), but to the pointer that carries the object (a [fat pointer](https://stackoverflow.com/questions/57754901/what-is-a-fat-pointer)), that is why we can use the same trait for dynamic or static polymorphism. 
 
+#### Example
 I will use a simple and contrived example, a calculator with 2 operations (addition and multiplication):
 
-#### C++ 
+##### C++ 
 
 ```C++
 struct Operation {
@@ -45,9 +63,9 @@ public:
 };
 ```
 
-#### Rust 
+##### Rust 
 
-In rust "interfaces" are defined via Traits (it is an equivalent concept to an abstract base class, but not exactly the same) 
+In Rust "interfaces" are defined via Traits (it is an equivalent concept to an abstract base class, but not exactly the same) 
 
 ```rust
 trait Operation {
@@ -79,7 +97,7 @@ impl Operation for Mul {
 }
 ```
 
-#### Dispatching
+#### Dispatch
 Now let's do the dynamic dispatch:
 
 ##### C++:
@@ -87,7 +105,7 @@ Now let's do the dynamic dispatch:
 ```C++
 void do_the_math_dynamically(const Operation& op, double a, double b) {
     auto result = op.calculate(a, b);
-    std::cout << a << op.name() << b << " = " << result << '\n';
+    std::cout << "Dynamic dispatch: " << a << op.name() << b << " = " << result << '\n';
 }
 
 int main() {
@@ -101,7 +119,7 @@ int main() {
 ```rust
 fn do_the_math_dynamically(op: &dyn Operation, a: f64, b: f64) {
     let result = op.calculate(a, b);
-    println!("{}{}{} = {}", a, op.name(), b, result);
+    println!("Dynamic dispatch: {}{}{} = {}", a, op.name(), b, result);
 }
 
 fn main() {
@@ -112,19 +130,20 @@ fn main() {
 
 #### Key points
 
-- In C++ the key point for dynamic dispatching is the `virtual` keyword when defining a method in a class/struct. 
-
-- On the other side, in Rust the key point is the `dyn` keyword at the moment of annotating the type of a variable.
+- C++: Use the `virtual` keyword when defining a method in a class/struct. 
+- Rust: Use the `dyn` keyword at the moment of annotating the type of a variable with a trait (see also [trait object](https://doc.rust-lang.org/reference/types/trait-object.html#trait-objects)).
 
 
 ### Part 2: Static dispatch
 
-On the contrary of dynamic dispatch, a static dispatch does not require a vtable or a fat pointer, the call is straight forward. The compiler performs type validation to ensure that types are compatible. 
+Contrary to dynamic dispatch, a static dispatch does not require a vtable or a fat pointer, the call is straight forward. The compiler performs a type validation to ensure that involved types are compatible (*). 
 
-In versions of C++ prior to 20, this is often referred as [duck typing](https://en.wikipedia.org/wiki/Duck_typing) (do not confuse with dynamic duck typing like in Python, in C++ this is purely static). In C++, the dispatch is implemented with templates (with the help of [concepts](https://en.wikipedia.org/wiki/Concepts_(C%2B%2B))). In Rust with Traits (as in dynamic dispatch). 
+In C++, the dispatch is implemented with templates, and, in recent version, with the help of [concepts](https://en.wikipedia.org/wiki/Concepts_(C%2B%2B)). In Rust the implementation is done with Traits (as in dynamic dispatch). 
+
+(*) In versions of C++ prior to 20, this is often referred as [duck typing](https://en.wikipedia.org/wiki/Duck_typing) (do not confuse with dynamic duck typing like in Python, in C++ this is purely static) because the compiler does not check the involved types. See the C++ implementation later in this section for an example and a deeper explanation.
 
 #### Rust
-In this section I will start with Rust because we do not need extra definitions (the `Operation` trait remains the same), so we can just do the dispatching with minor changes:
+I will start with Rust because we do not need extra definitions (the `Operation` trait remains the same), so we can just code the dispatching with minor changes:
 
 ```rust
 fn do_the_math_statically<T: Operation> (op: &T, a: f64, b: f64) {
@@ -138,28 +157,31 @@ fn main() {
 }
 ```
 
-Rust will perform a static dispatch in the generic function `do_the_math_statically` with any type that implements the `Operation` trait. This is validated at compile time, no fat pointers are needed (note the absence of `dyn` keyword)
+Rust will perform a static dispatch in the generic function `do_the_math_statically` with any type that implements the `Operation` trait. This is validated at compile time, no fat pointers/vtable are needed (note the absence of `dyn` keyword)
 
 #### C++
 
-In 'old' C++, a static dispatch is done with templates: 
+In 'old' C++, a static dispatch is done just with templates: 
 
 ```C++
 template<typename T>
 void do_the_math_statically(const T& op, double a, double b) {
     auto result = op.calculate(a, b);
-    std::cout << a << op.name() << b << " = " << result << '\n';
+    std::cout << "Static dispatch (old style): " << a << op.name() << b << " = " << result << '\n';
 }
 ```
 
-The problem with this approach is that `T` can be of any type, even those that do not have a `calculate` or `name` methods. The compiler will emit a bunch of awful errors if that happens. In order to solve this (help the compiler to narrow the allowed types) we need [concepts](https://en.wikipedia.org/wiki/Concepts_(C%2B%2B)) (a C++20 feature). Also with static dispatch, the type do not need to be polymorphic (no virtual functions). So, the C++ equivalent to Rust traits (for static dispatching) will be the following:
+The problem with this approach is that `T` can be of any type, even those that do not have a `calculate` or `name` methods can be used. The compiler will emit a bunch of awful errors if that happens. In order to solve this (help the compiler to narrow the allowed types and emit useful error messages) we need [concepts](https://en.wikipedia.org/wiki/Concepts_(C%2B%2B)) (a C++20 feature). Also, with static dispatch, the type does not need to be polymorphic (no virtual functions). So the C++ equivalent to Rust traits (for static dispatching) will be the following:
 
 ```C++
+// This is the static replacement for 'struct Operation'
 template<typename T>
-concept OperationConcept = requires(T t) {
+concept OperationConcept = requires(T const t) {
     { t.calculate(double{}, double{}) } -> std::same_as<double>;
     { t.name()                        } -> std::same_as<std::string>;
 };
+
+// Non polymorphic types, no need for inheritance and virtual functions:
 
 class NonPolyAdd {
 public:
@@ -184,7 +206,7 @@ public:
 };
 ```
 
-Note that we do not need a base abstract class (`Operation`). The static equivalent to it is the concept (`OperationConcept`). That is why any class that have `calculate` and `name` methods (with the same signature) can be used (even polymorphic instances like the one present in the dynamic section).
+Note that we do not need an abstract base class (`Operation`). The static equivalent of it is the concept `OperationConcept`. That is why any class that have `calculate` and `name` methods (with the same signature) can be used (even polymorphic instances like the one present in the dynamic section). 
 
 Now our static dispatch will be the following:
 
@@ -192,7 +214,7 @@ Now our static dispatch will be the following:
 template<OperationConcept T>
 void do_the_math_statically(const T& op, double a, double b) {
     auto result = op.calculate(a, b);
-    std::cout << a << op.name() << b << " = " << result << '\n';
+    std::cout << "Static dispatch: " <<  a << op.name() << b << " = " << result << '\n';
 }
 
 int main() {
@@ -203,6 +225,14 @@ int main() {
 
 #### Key points
 
-- The Rust key point for static dispatching is not to use the `dyn` keyword, but use generic types as a replacement. Each generic type should be annotated with the desired trait. 
+- Rust: `dyn` keyword is not necessary, generic types are used as a replacement. Each generic type should be annotated with the desired trait.
+- C++: Replace abstract base classes (interfaces) with concepts. Inheritance and virtual functions are not necessaries.
 
-- In C++ the key point is to replace the base abstract class (interface) with a concept, which turns unnecessary the virtual keyword (and the resulting vtable generation).
+
+## References
+
+- Fat pointers
+ - https://stackoverflow.com/questions/57754901/what-is-a-fat-pointer
+ - https://www.reddit.com/r/rust/comments/8ckfdb/were_fat_pointers_a_good_idea/
+ - https://www.reddit.com/r/ProgrammingLanguages/comments/fpnooj/tradeoffs_of_fat_vs_thin_pointers/
+- hola

@@ -39,7 +39,7 @@ namespace dynamic_dispatch
 
 namespace static_dispatch 
 {
-    // Replacement for Operation struct
+    // Replacement for Operation interface
     template<typename T>
     concept OperationConcept = requires(T const t) {
         { t.calculate(double{}, double{}) } -> std::same_as<double>;
