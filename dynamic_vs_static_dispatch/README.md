@@ -138,7 +138,7 @@ fn main() {
 
 Contrary to dynamic dispatch, a static dispatch does not require a vtable or a fat pointer, the call is straight forward. The compiler performs a type validation to ensure that involved types are compatible (*). 
 
-In C++, the dispatch is implemented with templates, and, in recent version, with the help of [concepts](https://en.wikipedia.org/wiki/Concepts_(C%2B%2B). In Rust the implementation is done with Traits (as in dynamic dispatch). 
+In C++, the dispatch is implemented with templates, and, in recent version, with the help of [concepts](https://en.wikipedia.org/wiki/Concepts_(C%2B%2B)). In Rust the implementation is done with Traits (as in dynamic dispatch). 
 
 (*) In versions of C++ prior to 20, this is often referred as [duck typing](https://en.wikipedia.org/wiki/Duck_typing) (do not confuse with dynamic duck typing like in Python, in C++ this is purely static) because the compiler does not check the involved types. See the C++ implementation later in this section for an example and a deeper explanation.
 
