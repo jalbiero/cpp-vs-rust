@@ -44,13 +44,17 @@ namespace static_dispatch
     concept OperationConcept = requires(T const t) {
         { t.calculate(double{}, double{}) } -> std::same_as<double>;
         { t.name()                        } -> std::same_as<std::string>;
-
-        // For a full signature check, the following can be used instead
-        // of the previous ones (but these are harder to read)
-        //  
-        // { &T::calculate } -> std::convertible_to<double (T::*)(double, double) const>;
-        // { &T::name      } -> std::convertible_to<std::string (T::*)() const>;
     };
+
+    // Alternative version (but harder to read) with a full signature check, note 
+    // that 't' is no longer const, the 'const' was moved to each method signature,
+    // this is useful when there are const and non const methods in the same concept:
+    //
+    // template<typename T>
+    // concept OperationConcept = requires(T t) {
+    //     { &T::calculate } -> std::convertible_to<double (T::*)(double, double) const>;
+    //     { &T::name      } -> std::convertible_to<std::string (T::*)() const>;
+    // };
 
     class Add { // Non polymorphic class, no virtual members
     public:
@@ -88,7 +92,8 @@ void do_the_math_statically(const T& op, double a, double b) {
     std::cout << "Static dispatch: " <<  a << op.name() << b << " = " << result << '\n';
 }
 
-// Old style static dispatch, no concepts
+// Old style static dispatch, no concepts:
+//
 // template<typename T>
 // void do_the_math_statically(const T& op, double a, double b) {
 //     auto result = op.calculate(a, b);
