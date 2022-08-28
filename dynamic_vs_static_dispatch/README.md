@@ -1,6 +1,6 @@
-# C++ and Rust 
+# C++ vs Rust 
 
-- [C++ and Rust](#c-and-rust)
+- [C++ vs Rust](#c-vs-rust)
   - [Dynamic and static dispatch](#dynamic-and-static-dispatch)
     - [Part 1: Dynamic dispatch](#part-1-dynamic-dispatch)
       - [Example](#example)
@@ -136,7 +136,7 @@ fn main() {
 
 ### Part 2: Static dispatch
 
-Contrary to dynamic dispatch, a static dispatch does not require a vtable or a fat pointer, the call is straight forward. The compiler performs a type validation to ensure that involved types are compatible (*). 
+Contrary to dynamic dispatch, a static dispatch does not require a vtable or a fat pointer, the call is straight forward because the target (method or function) is selected at compile time. Also, the compiler performs a type validation to ensure the involved types are compatible (*). 
 
 In C++, the dispatch is implemented with templates, and, in recent version, with the help of [concepts][1]. In Rust the implementation is done with Traits (as in dynamic dispatch). 
 
@@ -212,7 +212,7 @@ public:
 };
 ```
 
-Note that we do not need an abstract base class (`Operation`). The static equivalent of it is the concept `OperationConcept`. That is why any class that have `calculate` and `name` methods (with the same signature) can be used (even polymorphic instances like the one present in the dynamic section). 
+Note that we do not need an abstract base class (`Operation`). The static equivalent of it is the concept `OperationConcept`. That is why any class that have `calculate` and `name` methods (with the same signature) can be used (even polymorphic instances like the ones present in the dynamic section). 
 
 Now our static dispatch will be the following:
 
@@ -232,7 +232,7 @@ int main() {
 #### Key points
 
 - Rust: `dyn` keyword is not necessary, generic types are used as a replacement. Each generic type should be annotated with the desired trait.
-- C++: Replace abstract base classes (interfaces) with concepts. Inheritance and virtual functions are not necessaries.
+- C++: Replace abstract base classes (interfaces) with concepts. Used them with template parameters (note that `typename` keyword was replaced by the concept name, `OperationConcept`). Inheritance and virtual functions are not necessary.
 
 
 [1]: https://en.wikipedia.org/wiki/Concepts_(C%2B%2B)
