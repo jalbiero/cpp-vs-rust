@@ -138,7 +138,7 @@ fn main() {
 
 Contrary to dynamic dispatch, a static dispatch does not require a vtable or a fat pointer, the call is straight forward. The compiler performs a type validation to ensure that involved types are compatible (*). 
 
-In C++, the dispatch is implemented with templates, and, in recent version, with the help of [concepts](https://en.wikipedia.org/wiki/Concepts_(C%2B%2B)). In Rust the implementation is done with Traits (as in dynamic dispatch). 
+In C++, the dispatch is implemented with templates, and, in recent version, with the help of [concepts][1]. In Rust the implementation is done with Traits (as in dynamic dispatch). 
 
 (*) In versions of C++ prior to 20, this is often referred as [duck typing](https://en.wikipedia.org/wiki/Duck_typing) (do not confuse with dynamic duck typing like in Python, in C++ this is purely static) because the compiler does not check the involved types. See the C++ implementation later in this section for an example and a deeper explanation.
 
@@ -177,7 +177,7 @@ void do_the_math_statically(const T& op, double a, double b) {
 }
 ```
 
-The problem with this approach is that `T` can be of any type, even those that do not have a `calculate` or `name` methods can be used. The compiler will emit a bunch of awful errors if that happens. In order to solve this (help the compiler to narrow the allowed types and emit useful error messages) we need [concepts](https://en.wikipedia.org/wiki/Concepts_(C%2B%2B), a C++20 feature. Also, with static dispatch, the type does not need to be polymorphic (no virtual functions). So the C++ equivalent to Rust traits (for static dispatching) will be the following:
+The problem with this approach is that `T` can be of any type, even those that do not have a `calculate` or `name` methods can be used. The compiler will emit a bunch of awful errors if that happens. In order to solve this (help the compiler to narrow the allowed types and emit useful error messages) we need [concepts][1], a C++20 feature. Also, with static dispatch, the type does not need to be polymorphic (no virtual functions). So the C++ equivalent to Rust traits (for static dispatching) will be the following:
 
 ```C++
 // This is the static replacement for 'struct Operation'
@@ -233,3 +233,6 @@ int main() {
 
 - Rust: `dyn` keyword is not necessary, generic types are used as a replacement. Each generic type should be annotated with the desired trait.
 - C++: Replace abstract base classes (interfaces) with concepts. Inheritance and virtual functions are not necessaries.
+
+
+[1]: https://en.wikipedia.org/wiki/Concepts_(C%2B%2B)
