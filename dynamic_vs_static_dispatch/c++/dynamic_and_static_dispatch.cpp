@@ -80,7 +80,6 @@ namespace static_dispatch
     
 } // namespace static_dispatch
 
-
 void do_the_math_dynamically(const dynamic_dispatch::Operation& op, double a, double b) {
     auto result = op.calculate(a, b);
     std::cout << "Dynamic dispatch: " << a << op.name() << b << " = " << result << '\n';
@@ -91,6 +90,13 @@ void do_the_math_statically(const T& op, double a, double b) {
     auto result = op.calculate(a, b);
     std::cout << "Static dispatch: " <<  a << op.name() << b << " = " << result << '\n';
 }
+
+// New style, alternative version (without the "template" keyword)
+//
+// void do_the_math_statically(const static_dispatch::OperationConcept auto& op, double a, double b) {
+//     auto result = op.calculate(a, b);
+//     std::cout << "Static dispatch: " <<  a << op.name() << b << " = " << result << '\n';
+// }
 
 // Old style static dispatch, no concepts:
 //
