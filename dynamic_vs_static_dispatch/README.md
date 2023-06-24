@@ -232,7 +232,7 @@ int main() {
 #### Key points
 
 - Rust: `dyn` keyword is not necessary, generic types are used as a replacement. Each generic type should be annotated with the desired trait.
-- C++: Replace abstract base classes (interfaces) with concepts. Used them with template parameters (note that `typename` keyword was replaced by the concept name, `OperationConcept`). Inheritance and virtual functions are not necessary. **Note**: See the provided [source code](c++/dynamic_and_static_dispatch.cpp) for alternative versions of `OperationConcept` and `do_the_math_statically` (they are commented out).
+- C++: Replace abstract base classes (interfaces) with concepts. Use them with template parameters (note that `typename` keyword was replaced by the concept name, `OperationConcept`). Inheritance and virtual functions are not necessary. **Note**: See the provided [source code](c++/dynamic_and_static_dispatch.cpp) for alternative versions of `OperationConcept` and `do_the_math_statically` (they are commented out).
 
 
 [1]: https://en.wikipedia.org/wiki/Concepts_(C%2B%2B)
